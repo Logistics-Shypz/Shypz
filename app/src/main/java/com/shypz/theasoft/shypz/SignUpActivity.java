@@ -1,5 +1,8 @@
 package com.shypz.theasoft.shypz;
 
+import android.app.ProgressDialog;
+import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -10,23 +13,38 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.shypz.theasoft.shypz.interfaces.TextWatcherInterface;
+import com.shypz.theasoft.shypz.model.User;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.regex.Pattern;
 
 public class SignUpActivity extends AppCompatActivity implements TextWatcherInterface{
 
     private static final String TAG = "SignupActivity";
 
-    private EditText name;
-    private EditText email;
-    private EditText password;
-    private EditText mobile;
+    public static final String USER_SERVICE_URL = "http://192.168.1.3:8080/api/hello";
+
+
+
+    public EditText name;
+    public EditText email;
+    public EditText password;
+    public EditText mobile;
     private boolean name_validate=false;
     private boolean email_validate=false;
     private boolean password_validate=false;
     private boolean mobile_validate=false;
     private boolean validate;
     private Button signUp;
+    ProgressDialog pdcircle;
 
 
 
@@ -217,6 +235,20 @@ public class SignUpActivity extends AppCompatActivity implements TextWatcherInte
 
         Log.d(TAG,"In SignUp Method");
 
+        pdcircle = new ProgressDialog(this);
+        pdcircle.setTitle("Shypz");
+        pdcircle.setMessage("Signing Up....");
+        pdcircle.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        pdcircle.setCancelable(false);
+        pdcircle.show();
+        new SignUpTask().execute();
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                pdcircle.dismiss();
+            }
+        }, 3000); // 3000 milliseconds delay
+
 
     }
 
@@ -278,5 +310,90 @@ public class SignUpActivity extends AppCompatActivity implements TextWatcherInte
     @Override
     public boolean getValue() {
             return validate;
+    }
+
+
+
+   /* public class SignUpTask extends AsyncTask<JSONObject,String,String>{
+
+        @Override
+        protected String doInBackground(JSONObject... jsonObjects) {
+
+
+          String user_name =  name.getText().toString();
+          String user_email = email.getText().toString();
+          String user_mobile = mobile.getText().toString();
+          String user_password = password.getText().toString();
+
+
+
+          User u = new User(user_name,user_email,user_password,user_mobile);
+
+          Log.d(TAG,u.toString());
+
+            try {
+                URL url = new URL(USER_SERVICE_URL);
+
+                HttpURLConnection uconn = (HttpURLConnection)url.openConnection();
+
+                JSONObject jobj = new JSONObject();
+                jobj.put("username",user_name);
+                jobj.put("userEmail",user_email);
+                jobj.put("user_Password",user_password);
+                jobj.put("user_Mobile",user_mobile);
+
+
+                uconn.setRequestMethod("GET");
+
+                Log.d(TAG,uconn.getResponseMessage());
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            return u.toString();
+
+
+        }
+
+    }*/
+
+    public class SignUpTask extends AsyncTask<Void,Void,Void>{
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            HttpURLConnection uconn = null;
+
+            try {
+                URL ureq = new URL(USER_SERVICE_URL);
+                uconn = (HttpURLConnection) ureq.openConnection();
+                uconn.setConnectTimeout(7000);
+                uconn.setReadTimeout(7000);
+                int statusCode = uconn.getResponseCode();
+                if (statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    // handle unauthorized (if service requires user login)
+                } else if (statusCode != HttpURLConnection.HTTP_OK) {
+                    // handle any other errors, like 404, 500,..
+                }
+
+                // create JSON object from content
+                InputStream in = new BufferedInputStream(
+                        uconn.getInputStream());
+
+                Log.d(TAG, "test");
+               // return new JSONObject(getResponseText(in));
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
 }
