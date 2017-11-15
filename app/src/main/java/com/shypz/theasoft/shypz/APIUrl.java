@@ -7,4 +7,5 @@ package com.shypz.theasoft.shypz;
 public class APIUrl {
 
     public static final String BASE_URL = "http://192.168.1.3:8080/api/";
+    public int test = 1;
 }
