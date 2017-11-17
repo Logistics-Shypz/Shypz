@@ -1,6 +1,6 @@
 package com.shypz.theasoft.shypz;
-
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -11,26 +11,36 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import com.shypz.theasoft.shypz.constants.Constants;
 import com.shypz.theasoft.shypz.interfaces.TextWatcherInterface;
 import com.shypz.theasoft.shypz.model.User;
+import com.shypz.theasoft.shypz.utilities.NetworkConnection;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.regex.Pattern;
 
 public class SignUpActivity extends AppCompatActivity implements TextWatcherInterface{
 
     private static final String TAG = "SignupActivity";
 
-    public static final String USER_SERVICE_URL = "http://192.168.1.3:8080/api/hello";
+    private NetworkConnection ntConn;
+
+    public static final String USER_SERVICE_URL = Constants.User_Service_Url + "users";
 
 
 
@@ -231,23 +241,43 @@ public class SignUpActivity extends AppCompatActivity implements TextWatcherInte
 
 
 
-    private void signup() {
+    private void signup(){
 
-        Log.d(TAG,"In SignUp Method");
 
-        pdcircle = new ProgressDialog(this);
-        pdcircle.setTitle("Shypz");
-        pdcircle.setMessage("Signing Up....");
-        pdcircle.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        pdcircle.setCancelable(false);
-        pdcircle.show();
-        new SignUpTask().execute();
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            public void run() {
-                pdcircle.dismiss();
+        ntConn = new NetworkConnection(getApplicationContext());
+
+        boolean nc_check = ntConn.checkNetworkConnection();
+
+        if(nc_check){
+            Log.d(TAG,"In SignUp Method");
+
+            pdcircle = new ProgressDialog(this);
+
+            String user_name =  name.getText().toString();
+            String user_email = email.getText().toString();
+            String user_mobile = mobile.getText().toString();
+            String user_password = password.getText().toString();
+
+
+            JSONObject uobj = new JSONObject();
+            try {
+                uobj.put("username",user_name);
+                uobj.put("userEmail",user_email);
+                uobj.put("user_Password",user_password);
+                uobj.put("user_Mobile",user_mobile);
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        }, 3000); // 3000 milliseconds delay
+
+
+
+            new SignUpTask().execute(uobj);
+
+        }else{
+            Toast.makeText(this,"Network is not available",Toast.LENGTH_LONG).show();
+        }
+
+
 
 
     }
@@ -362,30 +392,94 @@ public class SignUpActivity extends AppCompatActivity implements TextWatcherInte
 
     }*/
 
-    public class SignUpTask extends AsyncTask<Void,Void,Void>{
+    public class SignUpTask extends AsyncTask<JSONObject,Void,String>{
+
 
         @Override
-        protected Void doInBackground(Void... voids) {
+        protected void onPreExecute() {
+            pdcircle.setTitle("Shypz");
+            pdcircle.setMessage("Signing Up....");
+            pdcircle.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            pdcircle.setCancelable(false);
+            pdcircle.show();
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    pdcircle.dismiss();
+                }
+            }, 3000); // 3000 milliseconds delay
+        }
+
+        @Override
+        protected String doInBackground(JSONObject... jsonObjects) {
 
             HttpURLConnection uconn = null;
+
+            JSONObject userPostObj = jsonObjects[0];
+
+            try {
+                Log.d(TAG,userPostObj.get("username").toString());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
             try {
                 URL ureq = new URL(USER_SERVICE_URL);
                 uconn = (HttpURLConnection) ureq.openConnection();
+                uconn.setRequestProperty("Content-Type","application/json");
+                //uconn.setDoInput(true);
+                //uconn.setDoInput(true);
                 uconn.setConnectTimeout(7000);
                 uconn.setReadTimeout(7000);
+
+
+
+                uconn.setRequestMethod("POST");
+
+
+                OutputStreamWriter os = new OutputStreamWriter(uconn.getOutputStream());
+                os.write(userPostObj.toString());
+                os.flush();
+
+
+
+
                 int statusCode = uconn.getResponseCode();
-                if (statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+               // if (statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     // handle unauthorized (if service requires user login)
-                } else if (statusCode != HttpURLConnection.HTTP_OK) {
+               // } //else if (statusCode != HttpURLConnection.HTTP_OK) {
                     // handle any other errors, like 404, 500,..
-                }
+
+
+               // }
 
                 // create JSON object from content
-                InputStream in = new BufferedInputStream(
-                        uconn.getInputStream());
+                if(statusCode == 200) {
+                    InputStream in = new BufferedInputStream(
+                            uconn.getInputStream());
 
-                Log.d(TAG, "test");
+                    BufferedReader br = new BufferedReader(new InputStreamReader(in));
+
+                    String result = br.readLine();
+
+                    Log.d(TAG, result);
+
+
+                    return result;
+                }else{
+                   if(statusCode != HttpURLConnection.HTTP_OK){
+                       Log.d(TAG,"In Error Stream");
+                       InputStream in = new BufferedInputStream(uconn.getErrorStream());
+                       BufferedReader br = new BufferedReader(new InputStreamReader(in));
+
+                       String result = br.readLine();
+
+                       Log.d(TAG, result);
+
+
+                       return result;
+                   }
+                }
                // return new JSONObject(getResponseText(in));
 
             } catch (MalformedURLException e) {
@@ -395,5 +489,60 @@ public class SignUpActivity extends AppCompatActivity implements TextWatcherInte
             }
             return null;
         }
+
+
+        @Override
+        protected void onPostExecute(String s) {
+
+
+            Log.d(TAG,s);
+            String message = "Not a valid";
+
+            try {
+                JSONObject reader = new JSONObject(s);
+
+
+                int user_register_success_code = reader.getInt("success_code");
+                message = reader.getString("message");
+
+                Log.d(TAG,message);
+
+                if(user_register_success_code == 1){
+                   /* pdcircle.setTitle("Shypz");
+                    pdcircle.setMessage(message);
+                    pdcircle.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    pdcircle.setCancelable(false);
+                    pdcircle.show();
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        public void run() {
+                            pdcircle.dismiss();
+                        }
+                    }, 1000); // 3000 milliseconds delay
+                    */
+                   pdcircle.dismiss();
+                    Intent intent = new Intent(getApplicationContext(),OTPActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    getApplicationContext().startActivity(intent);
+                    //finish();
+
+                }else{
+                    if(user_register_success_code == 2){
+                       Toast.makeText(getApplicationContext(),message,Toast.LENGTH_LONG).show();
+
+                    }else{
+                        if(user_register_success_code == 0){
+                            Toast.makeText(getApplicationContext(),message,Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
+
+
 }
