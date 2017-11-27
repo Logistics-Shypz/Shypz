@@ -44,7 +44,11 @@
         <activity
             android:name=".LoginActivity"
             android:label="@string/title_activity_login" />
-        <activity android:name=".OTPActivity"></activity>
+        <activity android:name=".OTPActivity" />
+        <activity
+            android:name=".ShypzHome"
+            android:label="@string/title_activity_shypz_home"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

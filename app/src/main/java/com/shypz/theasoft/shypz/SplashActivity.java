@@ -1,6 +1,7 @@
 package com.shypz.theasoft.shypz;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
@@ -11,11 +12,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.shypz.theasoft.shypz.utilities.NetworkConnection;
+import com.shypz.theasoft.shypz.utilities.SessionManager;
 
 public class SplashActivity extends AppCompatActivity {
 
     private ConnectivityManager cManager;
     private NetworkConnection ntConn;
+    private SessionManager session;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +27,10 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
         Button signUpBtn = (Button)findViewById(R.id.signUpButton);
         Button signInBtn = (Button)findViewById(R.id.signInButton);
+
+        session = new SessionManager(getApplicationContext());
+
+        Toast.makeText(getApplicationContext(), "User Login Status: " + session.isLoggedIn(), Toast.LENGTH_LONG).show();
 
 
 
@@ -50,15 +58,23 @@ public class SplashActivity extends AppCompatActivity {
             };
 
             t.start();*/
-            signUpBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
 
-                    Intent intent = new Intent(getApplicationContext(),SignUpActivity.class);
-                    startActivity(intent);
-                    finish();
-                }
-            });
+            if(session.isLoggedIn()){
+                Intent intent = new Intent(getApplicationContext(),ShypzHome.class);
+                startActivity(intent);
+                finish();
+            }else {
+
+                signUpBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                });
+            }
 
 
         }else{

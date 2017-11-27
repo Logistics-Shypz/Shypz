@@ -17,6 +17,7 @@ import com.shypz.theasoft.shypz.constants.Constants;
 import com.shypz.theasoft.shypz.interfaces.TextWatcherInterface;
 import com.shypz.theasoft.shypz.model.User;
 import com.shypz.theasoft.shypz.utilities.NetworkConnection;
+import com.shypz.theasoft.shypz.utilities.SessionManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,6 +40,7 @@ public class SignUpActivity extends AppCompatActivity implements TextWatcherInte
     private static final String TAG = "SignupActivity";
 
     private NetworkConnection ntConn;
+    private SessionManager session;
 
     public static final String USER_SERVICE_URL = Constants.User_Service_Url + "users";
 
@@ -64,6 +66,8 @@ public class SignUpActivity extends AppCompatActivity implements TextWatcherInte
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
+
+        session = new SessionManager(getApplicationContext());
 
         name = (EditText)findViewById(R.id.input_name);
         email = (EditText)findViewById(R.id.input_email);
@@ -521,10 +525,13 @@ public class SignUpActivity extends AppCompatActivity implements TextWatcherInte
                     }, 1000); // 3000 milliseconds delay
                     */
                    pdcircle.dismiss();
-                    Intent intent = new Intent(getApplicationContext(),OTPActivity.class);
+                   session.createLoginSession(name.getText().toString(),email.getText().toString(),mobile.getText().toString());
+                   Log.d(TAG,"Created Login Session");
+                    Intent intent = new Intent(getApplicationContext(),ShypzHome.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     getApplicationContext().startActivity(intent);
-                    //finish();
+                    finish();
 
                 }else{
                     if(user_register_success_code == 2){
