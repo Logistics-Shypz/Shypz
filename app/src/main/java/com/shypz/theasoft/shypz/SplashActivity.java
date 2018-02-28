@@ -74,6 +74,16 @@ public class SplashActivity extends AppCompatActivity {
                         finish();
                     }
                 });
+
+                signInBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                });
             }
 
 

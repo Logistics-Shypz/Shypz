@@ -268,7 +268,7 @@ public class SignUpActivity extends AppCompatActivity implements TextWatcherInte
                 uobj.put("username",user_name);
                 uobj.put("userEmail",user_email);
                 uobj.put("user_Password",user_password);
-                uobj.put("user_Mobile",user_mobile);
+                uobj.put("usermobile",user_mobile);
             } catch (JSONException e) {
                 e.printStackTrace();
             }

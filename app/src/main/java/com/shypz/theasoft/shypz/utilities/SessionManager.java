@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
+import com.shypz.theasoft.shypz.SignUpActivity;
 import com.shypz.theasoft.shypz.SplashActivity;
 import com.shypz.theasoft.shypz.constants.Constants;
 
@@ -113,5 +114,27 @@ public class SessionManager {
     // Get Login State
     public boolean isLoggedIn(){
         return pref.getBoolean(IS_LOGIN, false);
+    }
+
+    public void logoutUser(){
+
+
+            // Clearing all data from Shared Preferences
+            editor.clear();
+            editor.commit();
+
+            // After logout redirect user to Loing Activity
+            Intent i = new Intent(_context, SignUpActivity.class);
+            // Closing all the Activities
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+            // Add new Flag to start new Activity
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            // Staring Login Activity
+            _context.startActivity(i);
+
+
+
     }
 }

@@ -1,8 +1,10 @@
 package com.shypz.theasoft.shypz;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -12,9 +14,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
+
+import com.shypz.theasoft.shypz.utilities.SessionManager;
 
 public class ShypzHome extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private SessionManager session;
+
+    private static final String TAG = "ShypzHome";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,7 +31,8 @@ public class ShypzHome extends AppCompatActivity
         setContentView(R.layout.activity_shypz_home);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        // Session Manager
+        session = new SessionManager(getApplicationContext());
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,17 +90,18 @@ public class ShypzHome extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        if (id == R.id.nav_book) {
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
+            Toast.makeText(this,"Book Shypz",Toast.LENGTH_SHORT).show();
+        } else if (id == R.id.nav_payments) {
+            Toast.makeText(this,"Payments",Toast.LENGTH_SHORT).show();
+        } else if (id == R.id.nav_fleets) {
+            Toast.makeText(this,"Fleets",Toast.LENGTH_SHORT).show();
+        } else if (id == R.id.nav_contactus) {
+            Toast.makeText(this,"Contact Us",Toast.LENGTH_SHORT).show();
+        } else if (id == R.id.nav_log_out) {
+            Toast.makeText(this,"Log Out",Toast.LENGTH_SHORT).show();
+            session.logoutUser();
 
         }
 
